@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Generator, Self
 
 from .periods import Period
 
@@ -54,7 +53,7 @@ class PeriodSet:
 
     def __contains__(self, item: Period | datetime) -> bool:
         if isinstance(item, Period):
-            return item in self.periods
+            return any(item in p for p in self.periods)
         elif isinstance(item, datetime):
             return self.contains_dt(item)
         return False
