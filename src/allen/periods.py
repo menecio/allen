@@ -130,3 +130,28 @@ class Period:
 
     def __or__(self, period: Period) -> Period | None:
         return self.union(period)
+
+    def __add__(self, period: Period) -> Period | None:
+        return self | period
+
+    def __sub__(self, period: Period) -> list[Period]:
+        if not isinstance(period, Period):
+            return NotImplemented
+
+        if self.intersect(period) is None:
+            return [self]
+
+        has_left_remainder = self.start < period.start
+        has_right_remainder = self.end > period.end
+
+        match (has_left_remainder, has_right_remainder):
+            case (True, True):
+                return [
+                    Period(self.start, period.start),
+                    Period(period.end, self.end),
+                ]
+            case (True, False):
+                return [Period(self.start, period.start)]
+            case (False, True):
+                return [Period(period.end, self.end)]
+        return []
