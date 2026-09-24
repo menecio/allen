@@ -113,6 +113,13 @@ class Period:
             )
         return None
 
+    def __add__(self, other: Period) -> list[Period]:
+        if not isinstance(other, Period):
+            return NotImplemented
+        if (merged := self.union(other)) is not None:
+            return [merged]
+        return sorted([self, other])
+
     def __and__(self, period: Period) -> Period | None:
         return self.intersect(period)
 
@@ -130,9 +137,6 @@ class Period:
 
     def __or__(self, period: Period) -> Period | None:
         return self.union(period)
-
-    def __add__(self, period: Period) -> Period | None:
-        return self | period
 
     def __sub__(self, period: Period) -> list[Period]:
         if not isinstance(period, Period):
