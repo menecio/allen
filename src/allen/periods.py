@@ -126,7 +126,9 @@ class Period:
     def __contains__(self, item: datetime | Period) -> bool:
         return self.contains(item)
 
-    def __eq__(self, period: Period) -> bool:
+    def __eq__(self, period: Period | Any) -> bool:
+        if not isinstance(period, Period):
+            return NotImplemented
         return self.start == period.start and self.end == period.end
 
     def __gt__(self, period: Period) -> bool:

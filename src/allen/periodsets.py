@@ -25,11 +25,7 @@ class PeriodSet:
     def __and__(self, other: PeriodSet | Period) -> PeriodSet:
         if isinstance(other, Period):
             return PeriodSet(
-                [
-                    intersection
-                    for current in self
-                    if (intersection := current.intersect(other)) is not None
-                ]
+                [intersection for current in self if (intersection := current.intersect(other)) is not None]
             )
         elif isinstance(other, PeriodSet):
             intersections: list[Period] = []
@@ -108,14 +104,14 @@ class PeriodSet:
 
     @property
     def gaps(self) -> PeriodSet:
-        pairs = zip(self.periods[:-1], self.periods[1:])
+        pairs = zip(self.periods[:-1], self.periods[1:], strict=False)
         return PeriodSet([Period(pair[0].end, pair[1].start) for pair in pairs])
 
     @property
     def hull(self) -> Period | None:
         if self.is_empty:
             return None
-        return Period(self.first.start, self.last.end)
+        return Period(self.periods[0].start, self.periods[-1].end)
 
     @property
     def last(self) -> Period | None:
@@ -130,6 +126,6 @@ class PeriodSet:
         self._normalize()
 
     def contains_dt(self, dt: datetime) -> bool:
-        if self.is_empty or dt not in self.hull:
+        if (hull := self.hull) is None or dt not in hull:
             return False
         return any(dt in period for period in self.periods)

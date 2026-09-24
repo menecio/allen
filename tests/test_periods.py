@@ -24,22 +24,20 @@ from allen import Period
     ],
 )
 def test_periods_only_datetime_allowed(args: dict[str, str | datetime]):
-    pytest.raises(
-        TypeError,
-        lambda: Period(**args),
-    )
+    with pytest.raises(TypeError):
+        (lambda: Period(**args))()
 
 
 @pytest.mark.parametrize(
     "args",
     [
         {
-            "start": datetime(2026, 1, 1),  # tz naive
+            "start": datetime(2026, 1, 1),
             "end": datetime(2026, 1, 2, tzinfo=UTC),  # tz aware
         },
         {
-            "start": datetime(2026, 1, 1, tzinfo=UTC),  # tz naive
-            "end": datetime(2026, 1, 2),  # tz aware
+            "start": datetime(2026, 1, 1, tzinfo=UTC),  # tz aware
+            "end": datetime(2026, 1, 2),
         },
     ],
     ids=[
@@ -48,27 +46,33 @@ def test_periods_only_datetime_allowed(args: dict[str, str | datetime]):
     ],
 )
 def test_periods_only_allow_tz_aware_datetimes(args: dict[str, datetime]):
-    pytest.raises(ValueError, lambda: Period(**args))
+    with pytest.raises(ValueError):
+        (lambda: Period(**args))()
 
 
 def test_periods_must_be_in_same_tz():
-    pytest.raises(
-        ValueError,
-        lambda: Period(
-            start=datetime(2026, 1, 1, tzinfo=UTC),
-            end=datetime(2026, 1, 1, tzinfo=ZoneInfo("America/New_York")),
-        ),
-    )
+    with pytest.raises(ValueError):
+        (
+            lambda: Period(
+                start=datetime(2026, 1, 1, tzinfo=UTC),
+                end=datetime(
+                    2026,
+                    1,
+                    1,
+                    tzinfo=ZoneInfo("America/New_York"),
+                ),
+            )
+        )()
 
 
 def test_periods_end_must_be_gt_start():
-    pytest.raises(
-        ValueError,
-        lambda: Period(
-            start=datetime(2026, 2, 1, tzinfo=UTC),
-            end=datetime(2026, 1, 1, tzinfo=UTC),
-        ),
-    )
+    with pytest.raises(ValueError):
+        (
+            lambda: Period(
+                start=datetime(2026, 2, 1, tzinfo=UTC),
+                end=datetime(2026, 1, 1, tzinfo=UTC),
+            )
+        )()
 
 
 def test_periods_duration_ok():
@@ -154,25 +158,19 @@ def test_periods_contains_other_period_ok():
     assert period.contains(
         Period(
             datetime(2025, 12, 31, 19, tzinfo=ZoneInfo("America/New_York")),
-            datetime(
-                2026, 12, 31, 18, 59, 59, 998, tzinfo=ZoneInfo("America/New_York")
-            ),
+            datetime(2026, 12, 31, 18, 59, 59, 998, tzinfo=ZoneInfo("America/New_York")),
         )
     )
     assert not period.contains(
         Period(
             datetime(2025, 12, 31, tzinfo=ZoneInfo("America/New_York")),
-            datetime(
-                2026, 12, 31, 18, 59, 59, 999, tzinfo=ZoneInfo("America/New_York")
-            ),
+            datetime(2026, 12, 31, 18, 59, 59, 999, tzinfo=ZoneInfo("America/New_York")),
         )
     )
     assert not period.contains(
         Period(
             datetime(2025, 12, 30, 19, tzinfo=ZoneInfo("America/New_York")),
-            datetime(
-                2026, 12, 31, 18, 59, 59, 999, tzinfo=ZoneInfo("America/New_York")
-            ),
+            datetime(2026, 12, 31, 18, 59, 59, 999, tzinfo=ZoneInfo("America/New_York")),
         )
     )
 
