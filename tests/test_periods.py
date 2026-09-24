@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from allen.periods import Period
+from allen import Period
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,7 @@ from allen.periods import Period
         "validate end",
     ],
 )
-def test_periods_only_datetime_allowed(args):
+def test_periods_only_datetime_allowed(args: dict[str, str | datetime]):
     pytest.raises(
         TypeError,
         lambda: Period(**args),
@@ -47,7 +47,7 @@ def test_periods_only_datetime_allowed(args):
         "validate end",
     ],
 )
-def test_periods_only_allow_tz_aware_datetimes(args):
+def test_periods_only_allow_tz_aware_datetimes(args: dict[str, datetime]):
     pytest.raises(ValueError, lambda: Period(**args))
 
 
@@ -273,7 +273,7 @@ def test_periods_gap_between_two_periods_ok():
         "overlapping to the start",
     ],
 )
-def test_periods_no_gap_between_two_periods_ok(right):
+def test_periods_no_gap_between_two_periods_ok(right: Period):
     left = Period(
         datetime(2026, 1, 1, tzinfo=UTC),
         datetime(2026, 1, 31, 23, 59, 59, 999, tzinfo=UTC),
@@ -378,7 +378,7 @@ def test_periods_y_started_by_x():
         datetime(2026, 1, 2, tzinfo=UTC),
     ],
 )
-def test_periods_in_operator(inner):
+def test_periods_in_operator(inner: Period | datetime):
     outer = Period(
         datetime(2026, 1, 1, tzinfo=UTC),
         datetime(2026, 1, 31, tzinfo=UTC),
@@ -482,3 +482,152 @@ def test_periods_union_operator_returns_none_when_no_overlapping():
     )
 
     assert x | y is None
+
+
+@pytest.mark.parametrize(
+    "left, right, expected",
+    [
+        (
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 1, 31, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 2, 1, tzinfo=UTC),
+                datetime(2026, 2, 28, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 1, 1, tzinfo=UTC),
+                    datetime(2026, 1, 31, tzinfo=UTC),
+                ),
+                Period(
+                    datetime(2026, 2, 1, tzinfo=UTC),
+                    datetime(2026, 2, 28, tzinfo=UTC),
+                ),
+            ],
+        ),
+        (
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 1, 31, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 1, 30, tzinfo=UTC),
+                datetime(2026, 2, 28, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 1, 1, tzinfo=UTC),
+                    datetime(2026, 2, 28, tzinfo=UTC),
+                )
+            ],
+        ),
+        (
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 1, 31, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 1, 7, tzinfo=UTC),
+                datetime(2026, 1, 14, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 1, 1, tzinfo=UTC),
+                    datetime(2026, 1, 31, tzinfo=UTC),
+                )
+            ],
+        ),
+    ],
+    ids=[
+        "disjoint periods add up to a list of period",
+        "overlapping periods add up to a list of a single larger period",
+        "inner period add up to a list of the original period",
+    ],
+)
+def test_periods_add_operator_ok(left: Period, right: Period, expected: list[Period]):
+    assert left + right == expected
+
+
+@pytest.mark.parametrize(
+    "left, right, expected",
+    [
+        (
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 1, 31, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 2, 1, tzinfo=UTC),
+                datetime(2026, 2, 28, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 1, 1, tzinfo=UTC),
+                    datetime(2026, 1, 31, tzinfo=UTC),
+                )
+            ],
+        ),
+        (
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 1, 31, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 1, 8, tzinfo=UTC),
+                datetime(2026, 2, 28, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 1, 1, tzinfo=UTC),
+                    datetime(2026, 1, 8, tzinfo=UTC),
+                ),
+            ],
+        ),
+        (
+            Period(
+                datetime(2026, 2, 1, tzinfo=UTC),
+                datetime(2026, 2, 28, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 2, 26, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 2, 26, tzinfo=UTC),
+                    datetime(2026, 2, 28, tzinfo=UTC),
+                ),
+            ],
+        ),
+        (
+            Period(
+                datetime(2026, 1, 1, tzinfo=UTC),
+                datetime(2026, 1, 31, tzinfo=UTC),
+            ),
+            Period(
+                datetime(2026, 1, 7, tzinfo=UTC),
+                datetime(2026, 1, 14, tzinfo=UTC),
+            ),
+            [
+                Period(
+                    datetime(2026, 1, 1, tzinfo=UTC),
+                    datetime(2026, 1, 7, tzinfo=UTC),
+                ),
+                Period(
+                    datetime(2026, 1, 14, tzinfo=UTC),
+                    datetime(2026, 1, 31, tzinfo=UTC),
+                ),
+            ],
+        ),
+    ],
+    ids=[
+        "no overlapping",
+        "overlapping to the right",
+        "overlapping to the left",
+        "inner period",
+    ],
+)
+def test_periods_sub_operator_ok(left: Period, right: Period, expected: list[Period]):
+    assert left - right == expected
