@@ -5,6 +5,7 @@
 **A modern, type-safe Python library for modeling, normalizing, and manipulating time periods using Allen's Interval
 Algebra.**
 
+[![PyPI version](https://badge.fury.io/py/allen-python.svg)](https://badge.fury.io/py/allen-python)
 [![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Checked with Pyright](https://img.shields.io/badge/type%20checker-pyright-brightgreen.svg)](https://github.com/microsoft/pyright)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -46,10 +47,10 @@ Install `allen` using [`uv`](https://github.com/astral-sh/uv) or `pip`:
 
 ```bash
 # Using uv (Recommended)
-uv add allen
+uv add allen-python
 
 # Using pip
-pip install allen
+pip install allen-python
 ```
 
 ## 🚀 Quickstart & Real-World Examples

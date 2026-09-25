@@ -1,0 +1,49 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: read
+
+jobs:
+  pypi-publish:
+    name: Build and publish Python package
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Verify release tag source branch
+        run: |
+          TARGET_BRANCH="${{ github.event.release.target_commitish }}"
+          if [ "$TARGET_BRANCH" != "main" ] && [ "$TARGET_BRANCH" != "master" ]; then
+            echo "Error: PyPI releases are only allowed from the primary branch ('main'). Current branch: $TARGET_BRANCH"
+            exit 1
+          fi
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Run Pyright
+        run: uv run pyright
+
+      - name: Run Tests
+        run: uv run pytest
+
+      - name: Build package artifacts
+        run: uv build
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

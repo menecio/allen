@@ -1,5 +1,5 @@
 [project]
-name = "allen"
+name = "allen-python"
 version = "0.1.0"
 description = "A modern, type-safe Python library for modeling, normalizing, and manipulating time periods using Allen's Interval Algebra."
 readme = { file = "README.md", content-type = "text/markdown" }
@@ -8,6 +8,10 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/menecio/allen"
+Repository = "https://github.com/menecio/allen"
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
@@ -22,7 +26,22 @@ dev = [
 ]
 
 [tool.uv.build-backend]
+module-name = "allen"
+source-dir = "src"
 include = ["src/allen/py.typed"]
+exclude = [
+    "tests/**",
+    ".github/**",
+    ".pytest_cache/**",
+    ".ruff_cache/**",
+    ".mypy_cache/**",
+    "docs/**",
+    "*.pyc",
+    "__pycache__",
+    ".gitignore",
+    "uv.lock",
+    ".python-version"
+]
 
 [tool.pyright]
 include = ["src"]
